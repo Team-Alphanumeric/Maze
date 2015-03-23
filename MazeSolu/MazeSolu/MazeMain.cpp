@@ -63,7 +63,7 @@ int main()
 		fin.close();
 
 		m.print(m.numRows() - 1, m.numCols() - 1, 0, 0);
-		
+		system("pause");
 		Graph g;
 		m.mapMazeToGraph(g);
 		
