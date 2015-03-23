@@ -6,7 +6,7 @@
 #include <queue>
 #include "maze.h"
 #include <boost/graph/adjacency_list.hpp>
-;
+
 
 
 typedef property<edge_weight_t, int> EdgeProperty;
