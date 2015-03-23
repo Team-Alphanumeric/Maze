@@ -185,6 +185,7 @@ void maze::printPath(Graph::vertex_descriptor end,
 // prints out all the properties of the the vertices and edges in the graph
 ostream &operator<<(ostream &ostr, const Graph &g)
 {
+	// loop through all the vertices
 	pair<Graph::vertex_iterator, Graph::vertex_iterator> vItrRange = vertices(g);
 	for (Graph::vertex_iterator v = vItrRange.first; v != vItrRange.second; ++v)
 	{
@@ -194,6 +195,7 @@ ostream &operator<<(ostream &ostr, const Graph &g)
 		ostr << "Weight? " << g[*v].weight << endl;
 		
 	}
+	//loop for all the edges
 	pair<Graph::edge_iterator, Graph::edge_iterator> eItrRange = edges(g);
 	for (Graph::edge_iterator eItr = eItrRange.first; eItr != eItrRange.second; ++eItr)
 	{
