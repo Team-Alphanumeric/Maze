@@ -15,29 +15,34 @@ typedef property<edge_weight_t, int> EdgeProperty;
 // Mark all nodes in g as not visited.
 void clearVisited(Graph &g)
 {
+	//loops through all the vertices
 	pair<Graph::vertex_iterator, Graph::vertex_iterator> vItrRange = vertices(g);
 	for (Graph::vertex_iterator v = vItrRange.first; v != vItrRange.second; ++v)
 	{
-		g[*v].visited = false;
+		//marks each vertice as not visited		g[*v].visited = false;
 	}
 }
 
 // Set all node weights to w.
 void setNodeWeights(Graph &g, int w)
 {
+	//loops through all the vertices
 	pair<Graph::vertex_iterator, Graph::vertex_iterator> vItrRange = vertices(g);
 	for (Graph::vertex_iterator v = vItrRange.first; v != vItrRange.second; ++v)
 	{
+		//sets each vertice weight to w
 		g[*v].weight = w;
 	}
 }
 
-
+// set all the vericies as unmarked
 void clearMarked(Graph &g)
 {
+	//loops through all the vertices
 	pair<Graph::vertex_iterator, Graph::vertex_iterator> vItrRange = vertices(g);
 	for (Graph::vertex_iterator v = vItrRange.first; v != vItrRange.second; ++v)
 	{
+		//sets each vertice as not marked
 		g[*v].marked = false;
 	}
 }
