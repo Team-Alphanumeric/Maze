@@ -1,4 +1,4 @@
-#pragma once
+
 // Sample solution for project #5
 
 #include <iostream>
@@ -8,13 +8,38 @@
 #include <queue>
 #include <vector>
 #include <stack>
-
+#include <boost/graph/adjacency_list.hpp>
+;
 #include "d_except.h"
 #include "d_matrix.h"
 
 #define LargeValue 99999999
-
+using namespace boost;
 using namespace std;
+
+struct VertexProperties;
+struct EdgeProperties;
+
+typedef adjacency_list<vecS, vecS, bidirectionalS, VertexProperties, EdgeProperties> Graph;
+
+struct VertexProperties
+{
+	pair<int, int> cell; // maze cell (x,y) value
+	Graph::vertex_descriptor pred;
+	bool visited;
+	bool marked;
+	int weight;
+};
+
+// Create a struct to hold properties for each edge
+struct EdgeProperties
+{
+	int weight;
+	bool visited;
+	bool marked;
+};
+
+
 
 class maze
 {
@@ -27,13 +52,16 @@ public:
 		stack<Graph::vertex_descriptor> &s,
 		Graph g);
 	int numRows(){ return rows; };
+	void maze::findIndex(int &i, int &j, const Graph::vertex_descriptor v);
 	int numCols(){ return cols; };
 
 private:
 	int rows; // number of rows in the maze
 	int cols; // number of columns in the maze12 a
 
-	matrix<bool> value;
+	matrix<bool> value; //maze
+	matrix<Graph::vertex_descriptor> vMap; // vertices for the maze
+	
 };
 
 maze::maze(ifstream &fin)
@@ -101,9 +129,105 @@ bool maze::isLegal(int i, int j)
 	return value[i][j];
 }
 
-void maze::mapMazeToGraph(Graph &g)
 // Create a graph g that represents the legal moves in the maze m.
+void maze::mapMazeToGraph(Graph &g)
+{
+	Graph::vertex_descriptor v; // reference to a vertex in the graph
+	for (int i = 0; i <= rows - 1; i++)
+	for (int j = 0; j <= cols - 1; j++)
+	{
+		//cout << "Position i and j (" << i << " " << j << ")." << endl;
+		//cout << "The value of value[i][j] is " << value[i][j] << endl;
+		if (value[i][j])
+		{
+			// add a vertex to the graph and get vertex descriptor for this position 
+			v = add_vertex(g);
+			//cout << "Before vMap variables " << endl;
+			// add descriptor to the descriptor matrix
+			vMap[i][j] = v;	
+			//cout << "Before if statements" << endl;
+			// find indices of connected vertices (i.e. do the left and upper indices contain a vertex)
+			if ((i > 0) && (value[i - 1][j])) // case upper vertex exists
+			{
+				add_edge(vMap[i - 1][j], vMap[i][j], g); cout << "Add upper edge " << endl;
+			} // add edge between vertices
+
+			if ((j > 0) && (value[i][j - 1])) // case upper vertex exists
+			{
+				add_edge(vMap[i][j - 1], vMap[i][j], g); cout << "Add left edege " << endl;
+			} // add edge between vertices
+			//cout << "test count " << endl;
+		}
+	}
+}
 
 void maze::printPath(Graph::vertex_descriptor end,
-stack<Graph::vertex_descriptor> &s,
-Graph g)
+	stack<Graph::vertex_descriptor> &s,
+	Graph g)
+{
+	
+	// find indices of end goal
+	int endi, endj;
+	findIndex(endi, endj, end);
+
+	// temporary vertex descriptor
+	Graph::vertex_descriptor v;
+
+	// indices of current position
+	int curri, currj;
+	//cout << "test1 " << endl;
+	//system("pause");
+	// while the stack is not empty
+	while (!s.empty())
+	{
+		// get the first vertex (.top(), then .pop())
+		v = s.top(); s.pop();
+		// find the corresponding indices for the descriptor
+		findIndex(curri, currj, v);
+		// call print for this vertex
+		print(endi, endj, curri, currj);
+		// pause (probably)		
+	}
+	
+
+		
+}
+// returns the indices of a vertex given a vertex descriptor
+void maze::findIndex(int &i, int &j, const Graph::vertex_descriptor v)
+{
+	//loops through all the verticies
+	for (i = 0; i <= rows - 1; i++)
+	for (j = 0; j <= cols - 1; j++)
+	{
+		//if the vertex descriptor finds its corresponding
+		//position, then return the location.
+		if (vMap[i][j] == v)
+		{
+			return;
+		}
+	}
+}
+
+ostream &operator<<(ostream &ostr, const Graph &g)
+{
+	pair<Graph::vertex_iterator, Graph::vertex_iterator> vItrRange = vertices(g);
+	for (Graph::vertex_iterator v = vItrRange.first; v != vItrRange.second; ++v)
+	{
+		// ostr << "For node " << g[*v] << " properties: " << endl;
+		ostr << "Cell values at ( " << g[*v].cell.first << ", " << g[*v].cell.second << ") " << endl;
+		ostr << "Visited? " << ((g[*v].visited) ? "Yes" : "No") << endl;
+		ostr << "Weight? " << g[*v].weight << endl;
+		
+	}
+	pair<Graph::edge_iterator, Graph::edge_iterator> eItrRange = edges(g);
+	for (Graph::edge_iterator eItr = eItrRange.first; eItr != eItrRange.second; ++eItr)
+	{
+		Graph::vertex_descriptor u=target(*eItr, g);
+		Graph::vertex_descriptor v=source(*eItr, g);			
+		ostr << "There is an edge between (" << g[v].cell.first << " " << g[v].cell.second
+			<< ") and (" << g[u].cell.first << " " << g[u].cell.second << "). " << endl;
+		ostr << "Visited? " << ((g[*eItr].visited) ? " Yes" : "No") << endl;
+		ostr << "Weight?" << g[*eItr].weight << endl;
+	}
+	return ostr;
+}
