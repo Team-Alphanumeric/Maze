@@ -78,7 +78,7 @@ void findPathDFSRecursive(Graph &g, Graph::vertex_descriptor node, Graph::vertex
 		}
 		
 	}
-	//only pop of the end hasn't been found because otherwise you
+	//only pop off the node if the end hasn't been found because otherwise you
 	//will lose the path to your neigbors house which would suck
 	//because then you will have to find it again :? That will also
 	//require annoying other neigbors because you may have to revisit them
@@ -104,7 +104,7 @@ void findPathDFSStack(Graph &g, Graph::vertex_descriptor startNode, Graph::verte
 	Graph::adjacency_iterator vItr;
 	pair<Graph::adjacency_iterator, Graph::adjacency_iterator> vItrRange;
 	Graph::vertex_descriptor v;
-	//first off visited need to be cleared so that
+	//first off, all visited nodes need to be cleared so that
 	// there isn't a bug where for some random reason
 	// a node is marked as visited, like if another algorithim was run beforehand
 	// in the same instace of the code
@@ -125,20 +125,20 @@ void findPathDFSStack(Graph &g, Graph::vertex_descriptor startNode, Graph::verte
 		//loop through all the adajent nodes of the node currently on the top of the stack
 		for (vItr = vItrRange.first; vItr != vItrRange.second; ++vItr)
 		{
-			//if there are unvisted nodes then pay them a visit, it is probably about time you do that
-			//if they are already visited (I mean if you like that person you could pay them another visit 
+			//If there are unvisted nodes then pay them a visit, it is probably about time you do that.
+			//If they are already visited (I mean if you like that person you could pay them another visit 
 			//but you ain't got time for that) then the loop will fail and enter into the subsequent if statement
-			//following the for loop which pops that currenty node off the stack because there are no more
+			//following the for loop which pops the currenty node off the stack because there are no more
 			//adajcenet nodes and the end is not reached which means that it is a dead end.
 			if (!g[*vItr].visited)
 			{
 				//mark that adjacent node as visited because you just payed that neigbor a visit by seraching for them
 				g[*vItr].visited = true;
-				//push the node on the stack because that node because it possible that the neigbor can lead you
+				//push the node on the stack because it possible that the neigbor can lead you
 				//torwards your target!
 				path.push(*vItr);		
-				//break if you found an adajent node because you must follow that lead before visiting your other neigbors
-				//you will come back assuming that your end goal is not found because if it is then you ain't giving them
+				//break if you found an adajent node because you must follow that lead before visiting your other neigbors.
+				//you will come back assuming that your end goal is not found because if it is, then you ain't giving them
 				//a visit because they are of no use to you
 				break;
 			}			
