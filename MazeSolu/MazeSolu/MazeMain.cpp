@@ -6,6 +6,7 @@
 #include <queue>
 #include "maze.h"
 #include <boost/graph/adjacency_list.hpp>
+#include <stack>
 
 
 
@@ -19,7 +20,8 @@ void clearVisited(Graph &g)
 	pair<Graph::vertex_iterator, Graph::vertex_iterator> vItrRange = vertices(g);
 	for (Graph::vertex_iterator v = vItrRange.first; v != vItrRange.second; ++v)
 	{
-		//marks each vertice as not visited		g[*v].visited = false;
+		//marks each vertice as not visited		
+		g[*v].visited = false;
 	}
 }
 
@@ -46,6 +48,57 @@ void clearMarked(Graph &g)
 		g[*v].marked = false;
 	}
 }
+// finding any path using DFS
+void findPathDFSRecursive(Graph &g, Graph::vertex_descriptor node, Graph::vertex_descriptor endNode, stack<Graph::vertex_descriptor> &path)
+{
+	//mark the current node as visited
+	g[node].visited = true;		
+	//as long as the end node isn't finsihed. a.k.a the path to the end isn't found
+	// then keep searching
+	if (g[endNode].visited)
+	{		
+		cout << "End found" << endl; 
+		return;
+	}
+	else
+	{
+		//push that node to the stack
+		path.push(node);
+	}
+	//iterate through all the adjacnet nodes of the current node to visit them
+	pair<Graph::adjacency_iterator, Graph::adjacency_iterator> vItrRange = adjacent_vertices(node, g);
+	for (Graph::adjacency_iterator vItr = vItrRange.first; vItr != vItrRange.second; ++vItr)
+	{
+		//if the neigboring node has not been visited then go give them a visit
+		//dont' ignore any of your neigbors neigbors!!!
+		if (!g[*vItr].visited)
+		{
+			//recursively call the function so that the function works :|
+			findPathDFSRecursive(g, *vItr, endNode, path);			
+		}
+		
+	}
+	//only pop of the end hasn't been found because otherwise you
+	//will lose the path to your neigbors house which would suck
+	//because then you will have to find it again :? That will also
+	//require annoying other neigbors because you may have to revisit them
+	// and you don't want to revisit the neigbor of the neigbor of the neigbor 
+	//down the street.....
+	if (!g[endNode].visited)
+	{
+		path.pop();
+	}
+
+}
+//fuction to call DFS for any path with less aruguments
+void findPathDFSRecursiveCall(Graph &g, Graph::vertex_descriptor endNode, stack<Graph::vertex_descriptor> &pathInit)
+{
+	pair<Graph::vertex_iterator, Graph::vertex_iterator> vItrRange = vertices(g);	
+	clearVisited(g);
+	findPathDFSRecursive(g, *vItrRange.first, endNode, pathInit);
+}
+
+
 
 int main()
 {
@@ -71,7 +124,11 @@ int main()
 		system("pause");
 		Graph g;
 		m.mapMazeToGraph(g);
-		
+		cout << "Gets here!!" << endl;
+		system("pause");
+		stack<Graph::vertex_descriptor> pathInit;
+		findPathDFSRecursiveCall(g, m.getEnd(), pathInit);
+		m.printPath(m.getEnd(), pathInit, g);
 		system("pause");
 		clearVisited(g);
 		setNodeWeights(g, 0);

@@ -53,6 +53,12 @@ public:
 		Graph g);
 	int numRows(){ return rows; };
 	int numCols(){ return cols; };
+	Graph::vertex_descriptor maze::getEnd()
+	{		
+		return vMap[rows-1][cols-1];
+	}
+
+	
 
 private:
 	int rows; // number of rows in the maze
@@ -192,7 +198,7 @@ ostream &operator<<(ostream &ostr, const Graph &g)
 		ostr << "Node descriptor " << *v << " properties: " << endl;
 		ostr << "Cell value at ( " << g[*v].cell.first << ", " << g[*v].cell.second << ") " << endl;
 		ostr << "Visited? " << ((g[*v].visited) ? "Yes" : "No") << endl;
-		ostr << "Weight? " << g[*v].weight << endl;
+		//ostr << "Weight? " << g[*v].weight << endl;
 		
 	}
 	//loop for all the edges
@@ -201,11 +207,13 @@ ostream &operator<<(ostream &ostr, const Graph &g)
 	{
 		Graph::vertex_descriptor u=target(*eItr, g);
 		Graph::vertex_descriptor v=source(*eItr, g);		
-		ostr << "Edge descriptor " << *eItr << " properties: " << endl;
-		ostr << "There is an edge between (" << g[v].cell.first << ", " << g[v].cell.second
-			<< ") and (" << g[u].cell.first << ", " << g[u].cell.second << "). " << endl;
-		ostr << "Visited? " << ((g[*eItr].visited) ? " Yes" : "No") << endl;
-		ostr << "Weight?" << g[*eItr].weight << endl;
+		//ostr << "Edge descriptor " << *eItr << " properties: " << endl;
+		//ostr << "There is an edge between (" << g[v].cell.first << ", " << g[v].cell.second
+		//	<< ") and (" << g[u].cell.first << ", " << g[u].cell.second << "). " << endl;
+		//ostr << "Visited? " << ((g[*eItr].visited) ? " Yes" : "No") << endl;
+		//ostr << "Weight?" << g[*eItr].weight << endl;
 	}
 	return ostr;
 }
+
+
