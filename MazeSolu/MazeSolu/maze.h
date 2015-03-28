@@ -57,6 +57,10 @@ public:
 	{		
 		return vMap[rows-1][cols-1];
 	}
+	Graph::vertex_descriptor maze::getStart()
+	{
+		return vMap[0][0];
+	}
 
 	
 

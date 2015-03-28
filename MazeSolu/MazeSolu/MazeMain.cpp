@@ -97,6 +97,73 @@ void findPathDFSRecursiveCall(Graph &g, Graph::vertex_descriptor endNode, stack<
 	clearVisited(g);
 	findPathDFSRecursive(g, *vItrRange.first, endNode, pathInit);
 }
+// find any path in the graph using DFS with a Stack
+void findPathDFSStack(Graph &g, Graph::vertex_descriptor startNode, Graph::vertex_descriptor endNode, stack<Graph::vertex_descriptor> &path)
+{	
+	//declare variables
+	Graph::adjacency_iterator vItr;
+	pair<Graph::adjacency_iterator, Graph::adjacency_iterator> vItrRange;
+	Graph::vertex_descriptor v;
+	//first off visited need to be cleared so that
+	// there isn't a bug where for some random reason
+	// a node is marked as visited, like if another algorithim was run beforehand
+	// in the same instace of the code
+	clearVisited(g);	
+	//push the start node onto the stack
+	path.push(startNode);
+	//mark the start node as visited because we are currently giving the 
+	//start node a visit and it got pushed onto to the stack
+	g[startNode].visited = true;	
+	//keep running the alorithim until the path is empty which only happens if
+	// the end is not found
+	while (!path.empty())
+	{		
+		// find the node currently on the top of the stack
+		v  = path.top();
+		//find the nodes adjacent to the node currently on the top of the stack
+		vItrRange = adjacent_vertices(v, g);		
+		//loop through all the adajent nodes of the node currently on the top of the stack
+		for (vItr = vItrRange.first; vItr != vItrRange.second; ++vItr)
+		{
+			//if there are unvisted nodes then pay them a visit, it is probably about time you do that
+			//if they are already visited (I mean if you like that person you could pay them another visit 
+			//but you ain't got time for that) then the loop will fail and enter into the subsequent if statement
+			//following the for loop which pops that currenty node off the stack because there are no more
+			//adajcenet nodes and the end is not reached which means that it is a dead end.
+			if (!g[*vItr].visited)
+			{
+				//mark that adjacent node as visited because you just payed that neigbor a visit by seraching for them
+				g[*vItr].visited = true;
+				//push the node on the stack because that node because it possible that the neigbor can lead you
+				//torwards your target!
+				path.push(*vItr);		
+				//break if you found an adajent node because you must follow that lead before visiting your other neigbors
+				//you will come back assuming that your end goal is not found because if it is then you ain't giving them
+				//a visit because they are of no use to you
+				break;
+			}			
+		}
+		//if the for loop contiunes to the case that the iterator equals the end of the node 
+		//then none of the adajent nodes to the current top of the stack are unvisited
+		//and therefore the node on the top of the stack is currently useless to you 
+		//so get rid of it! The end hasn't been found yet and there is no where else to go.
+		if (vItr == vItrRange.second)
+		{
+			path.pop();			
+		}
+		//WAIT the end has been found!!! Stop seraching and get out of this function!
+		if (g[endNode].visited)
+		{			
+			break;
+		}
+	}
+	//the end hasn't been found and the every node has been visited so
+	//someone dun goofed or the maze isn't supposed to have a solution.
+	if (!path.empty())
+	{
+		cout << "What HAPPENED!!!! no path was found" << endl;
+	}
+}
 
 
 
@@ -123,17 +190,11 @@ int main()
 		m.print(m.numRows() - 1, m.numCols() - 1, 0, 0);
 		system("pause");
 		Graph g;
-		m.mapMazeToGraph(g);
-		cout << "Gets here!!" << endl;
-		system("pause");
+		m.mapMazeToGraph(g);	
 		stack<Graph::vertex_descriptor> pathInit;
-		findPathDFSRecursiveCall(g, m.getEnd(), pathInit);
+		findPathDFSStack(g, m.getStart(), m.getEnd(), pathInit);
 		m.printPath(m.getEnd(), pathInit, g);
 		system("pause");
-		clearVisited(g);
-		setNodeWeights(g, 0);
-		clearMarked(g);
-		cout << g << endl;		
 	}
 	catch (rangeError e)
 	{
