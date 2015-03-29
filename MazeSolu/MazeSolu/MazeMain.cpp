@@ -7,6 +7,7 @@
 #include "maze.h"
 #include <boost/graph/adjacency_list.hpp>
 #include <stack>
+#include <queue>
 
 
 
@@ -36,7 +37,25 @@ void setNodeWeights(Graph &g, int w)
 		g[*v].weight = w;
 	}
 }
-
+template <typename T>
+void setStacksEqual(stack <T> firstStack, stack <T> &secondStack)
+{
+	while (!secondStack.empty())
+	{
+		secondStack.pop();
+	}
+	stack <T> intermidate;
+	while (!firstStack.empty())
+	{
+		intermidate.push(firstStack.top());
+		firstStack.pop();
+	}
+	while (!intermidate.empty())
+	{
+		secondStack.push(intermidate.top());
+		intermidate.pop(); 
+	}
+}
 // set all the vericies as unmarked
 void clearMarked(Graph &g)
 {
@@ -165,10 +184,86 @@ void findPathDFSStack(Graph &g, Graph::vertex_descriptor startNode, Graph::verte
 	}
 }
 
+void findShortestPathDFS(Graph &g, Graph::vertex_descriptor node, Graph::vertex_descriptor endNode, stack<Graph::vertex_descriptor> &bestPath, stack<Graph::vertex_descriptor> &path)
+{
+	g[node].visited = true;
+	path.push(node);
+	if (g[endNode].visited)
+	{
+		cout << "End node visited" << endl;
+		cout << "Size of path" << path.size() << endl;
+		if (bestPath.size() == 0)
+		{
+			cout << "Best path found" << endl;
+			setStacksEqual<Graph::vertex_descriptor>(path, bestPath);
+		}
+		else if (path.size() < bestPath.size())
+		{
+			cout << "Better final path found" << endl;
+			setStacksEqual<Graph::vertex_descriptor>(path, bestPath);
+		}
+		g[node].visited = false;
+	}	
+	//iterate through all the adjacnet nodes of the current node to visit them
+	pair<Graph::adjacency_iterator, Graph::adjacency_iterator> vItrRange = adjacent_vertices(node, g);
+	for (Graph::adjacency_iterator vItr = vItrRange.first; vItr != vItrRange.second; ++vItr)
+	{
+		if (!g[*vItr].visited)
+		{
+			findShortestPathDFS(g, *vItr, endNode, bestPath, path);
+		}
 
+	}
+	if (!g[endNode].visited)
+	{
+		g[node].visited = false;
+		path.pop();
+	}
+}
+
+
+
+
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  NEED A PRINTING FUNCTION AND TO FIGURE OUT HOW TO CALCULATE THE PATH SKIPPING FOR NOW
+void findShortestPathBFS(Graph &g, Graph::vertex_descriptor startNode, Graph::vertex_descriptor endNode, queue<Graph::vertex_descriptor> path)
+{
+	Graph::adjacency_iterator vItr;
+	pair<Graph::adjacency_iterator, Graph::adjacency_iterator> vItrRange;
+	Graph::vertex_descriptor v;
+	clearVisited(g);
+	path.push(startNode);
+	g[startNode].visited = true;
+	while (!path.empty())
+	{
+		v = path.front();
+		for (vItr = vItrRange.first; vItr != vItrRange.second; ++vItr)
+		{			
+			if (!g[*vItr].visited)
+			{
+				//mark that adjacent node as visited because you just payed that neigbor a visit by seraching for them
+				g[*vItr].visited = true;
+				//push the node on the stack because it possible that the neigbor can lead you
+				//torwards your target!
+				path.push(*vItr);
+			}
+			if (g[endNode].visited)
+			{
+				break;
+			}
+		}
+		if (g[endNode].visited)
+		{
+			break;
+		}
+		else
+		{
+			path.pop();
+		}
+	}
+}
 
 int main()
-{
+{	
 	try
 	{
 		
@@ -191,9 +286,13 @@ int main()
 		system("pause");
 		Graph g;
 		m.mapMazeToGraph(g);	
-		stack<Graph::vertex_descriptor> pathInit;
-		findPathDFSStack(g, m.getStart(), m.getEnd(), pathInit);
-		m.printPath(m.getEnd(), pathInit, g);
+		stack<Graph::vertex_descriptor> pathStackInit;
+		stack<Graph::vertex_descriptor> pathStackInitBest;
+		queue<Graph::vertex_descriptor> pathQueueInit;
+		clearVisited(g);
+		findShortestPathDFS(g, m.getStart(), m.getEnd(), pathStackInitBest, pathStackInit);
+		system("pause");
+		m.printPath(m.getEnd(), pathStackInitBest, g);
 		system("pause");
 	}
 	catch (rangeError e)
@@ -207,3 +306,4 @@ int main()
 	system("pause");
 
 }
+
