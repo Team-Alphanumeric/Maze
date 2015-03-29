@@ -8,6 +8,7 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <stack>
 #include <queue>
+#include <list>
 
 
 
@@ -184,25 +185,36 @@ void findPathDFSStack(Graph &g, Graph::vertex_descriptor startNode, Graph::verte
 	}
 }
 
+//This funciton is pretty much like the findPathDFSRecurisive except it stores the fastest path to the
+//end which means that it stores the shortest path
+//The comments will be the same as the other function except I will
+//comment the differences.
 void findShortestPathDFS(Graph &g, Graph::vertex_descriptor node, Graph::vertex_descriptor endNode, stack<Graph::vertex_descriptor> &bestPath, stack<Graph::vertex_descriptor> &path)
 {
 	g[node].visited = true;
 	path.push(node);
+	//when the end node is visited
+	//it doesn't return, instead it stores the path if it is shorter then the current
+	//best path, otherwise is ignores that path and keep recursing unitl all the paths have been visited.
 	if (g[endNode].visited)
 	{
-		cout << "End node visited" << endl;
-		cout << "Size of path" << path.size() << endl;
+		//if bestPath is empty, then no best paths have been stored in the stack yet so
+		//store the first path that gets to the end node
 		if (bestPath.size() == 0)
 		{
-			cout << "Best path found" << endl;
+			//sets the best path to the current path
 			setStacksEqual<Graph::vertex_descriptor>(path, bestPath);
 		}
+		//if a bestPath has already one path then if the current path to the end is 
+		//shorter then the best path to the end, then replace the current best path with
+		//the new path
 		else if (path.size() < bestPath.size())
 		{
-			cout << "Better final path found" << endl;
+			//sets the best path equal to the current path
 			setStacksEqual<Graph::vertex_descriptor>(path, bestPath);
 		}
-		g[node].visited = false;
+		//unvisit the end node so it can be reached again
+		//g[node].visited = false;
 	}	
 	//iterate through all the adjacnet nodes of the current node to visit them
 	pair<Graph::adjacency_iterator, Graph::adjacency_iterator> vItrRange = adjacent_vertices(node, g);
@@ -214,49 +226,91 @@ void findShortestPathDFS(Graph &g, Graph::vertex_descriptor node, Graph::vertex_
 		}
 
 	}
-	if (!g[endNode].visited)
+	//if the end node hasn't been reached yet
+	//if (!g[endNode].visited)
+	//{
+	g[node].visited = false;
+	path.pop();
+	//}
+	if (path.size() == 0 && bestPath.size()==0)
 	{
-		g[node].visited = false;
-		path.pop();
+		cout << "No path exists" << endl;
 	}
 }
-
-
-
-
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  NEED A PRINTING FUNCTION AND TO FIGURE OUT HOW TO CALCULATE THE PATH SKIPPING FOR NOW
-void findShortestPathBFS(Graph &g, Graph::vertex_descriptor startNode, Graph::vertex_descriptor endNode, queue<Graph::vertex_descriptor> path)
+//find the shortest path in the maze via BFS
+void findShortestPathBFS(Graph &g, Graph::vertex_descriptor startNode, Graph::vertex_descriptor endNode, queue<Graph::vertex_descriptor> path, stack<Graph::vertex_descriptor> &bestPath)
 {
+	//declare all them variables
 	Graph::adjacency_iterator vItr;
 	pair<Graph::adjacency_iterator, Graph::adjacency_iterator> vItrRange;
 	Graph::vertex_descriptor v;
-	clearVisited(g);
+	//make sure all the nodes started unvisited
+	clearVisited(g);	
+	//push the startNode onto the queue because 
+	//otherwise the queue would be empty which would 
+	//mean the while loop would never execute
 	path.push(startNode);
+	//set the start node to true because we pushed it onto the queue
+	//which means we visited it
 	g[startNode].visited = true;
+	//set the initalize size of the vector to 100
+	vector<Graph::vertex_descriptor>pred(100);
+	//contiunue looping until the queue is empty which means that 
+	//there was no path found
 	while (!path.empty())
 	{
+		//set v equal to the node currently at the front of the queue
 		v = path.front();
+		//find the adajcent vertices for node v
+		vItrRange = adjacent_vertices(v, g);
+		//loop through all the adajcent nodes of v
 		for (vItr = vItrRange.first; vItr != vItrRange.second; ++vItr)
 		{			
+			//if an adajcent node has not been visited yet, then visit that node and
+			//push it onto the back of the queue
 			if (!g[*vItr].visited)
 			{
-				//mark that adjacent node as visited because you just payed that neigbor a visit by seraching for them
+				//visit the current adajcent node
 				g[*vItr].visited = true;
-				//push the node on the stack because it possible that the neigbor can lead you
-				//torwards your target!
+				//if the predecssor vector is smaller then the descriptor of the 
+				//current node then increase the vector to 10 units bigger then that descriptor
+				if (*vItr > pred.size())
+				{
+					pred.resize(*vItr + 10);
+				}
+				//push the current adjacent node to the back of the queue
 				path.push(*vItr);
-			}
-			if (g[endNode].visited)
-			{
-				break;
-			}
+				//set the position in the pred vector for the current node to the
+				//value of the descriptor for its predecessor. This allows linking of
+				//each node so the shortest path to a node can be recreated by finding
+				//its predessesor nodes
+				pred[*vItr] = v;
+			}			
 		}
+		//if the end node has been visited
+		//then put the queue into a stack and return a stack so that the 
+		//printing function can take the stack and print it
 		if (g[endNode].visited)
 		{
+			//set the initalize conditions
+			v = path.front();
+			bestPath.push(v);
+			//run until the start node is the current node 
+			//which means that the path has been found to the begining
+			while (v!=startNode)			
+			{	
+				//set the current node equal to its predecssor
+				//and then push that node onto the queue
+				v = pred[v];
+				bestPath.push(v);
+			}
+			//once the best path is found then return that path and quit the function
 			break;
 		}
+		//if the end node hasn't been found then pop the front of the queue
+		//so the process can keep going.
 		else
-		{
+		{			
 			path.pop();
 		}
 	}
@@ -290,7 +344,7 @@ int main()
 		stack<Graph::vertex_descriptor> pathStackInitBest;
 		queue<Graph::vertex_descriptor> pathQueueInit;
 		clearVisited(g);
-		findShortestPathDFS(g, m.getStart(), m.getEnd(), pathStackInitBest, pathStackInit);
+		findShortestPathBFS(g, m.getStart(), m.getEnd(), pathQueueInit, pathStackInitBest);
 		system("pause");
 		m.printPath(m.getEnd(), pathStackInitBest, g);
 		system("pause");

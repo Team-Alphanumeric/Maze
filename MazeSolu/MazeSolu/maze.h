@@ -187,7 +187,8 @@ void maze::printPath(Graph::vertex_descriptor end,
 		// get the top-of-stack vertex
 		v = s.top(); s.pop();		
 		// call print for this vertex
-		print(g[end].cell.first, g[end].cell.second, g[v].cell.first, g[v].cell.second);	
+		print(g[end].cell.first, g[end].cell.second, g[v].cell.first, g[v].cell.second);
+		system("pause");
 	}
 	return;
 }
