@@ -57,6 +57,15 @@ void setStacksEqual(stack <T> firstStack, stack <T> &secondStack)
 		intermidate.pop(); 
 	}
 }
+//clear the stack of all data
+template <typename T>
+void clearStack(stack<T> firstStack)
+{
+	while (!firstStack.empty())
+	{
+		firstStack.pop();
+	}
+}
 // set all the vericies as unmarked
 void clearMarked(Graph &g)
 {
@@ -107,6 +116,10 @@ void findPathDFSRecursive(Graph &g, Graph::vertex_descriptor node, Graph::vertex
 	if (!g[endNode].visited)
 	{
 		path.pop();
+	}
+	if (path.empty())
+	{
+		cout << "No path found" << endl;
 	}
 
 }
@@ -274,7 +287,7 @@ void findShortestPathBFS(Graph &g, Graph::vertex_descriptor startNode, Graph::ve
 				g[*vItr].visited = true;
 				//if the predecssor vector is smaller then the descriptor of the 
 				//current node then increase the vector to 10 units bigger then that descriptor
-				if (*vItr > pred.size())
+				if (*vItr >= pred.size())
 				{
 					pred.resize(*vItr + 10);
 				}
@@ -344,10 +357,28 @@ int main()
 		stack<Graph::vertex_descriptor> pathStackInitBest;
 		queue<Graph::vertex_descriptor> pathQueueInit;
 		clearVisited(g);
-		findShortestPathBFS(g, m.getStart(), m.getEnd(), pathQueueInit, pathStackInitBest);
-		system("pause");
+		findShortestPathBFS(g, m.getStart(), m.getEnd(), pathQueueInit, pathStackInitBest);		
 		m.printPath(m.getEnd(), pathStackInitBest, g);
 		system("pause");
+		clearVisited(g);
+		clearStack(pathStackInitBest);
+		clearStack(pathStackInit);
+		findShortestPathDFS(g, m.getStart(), m.getEnd(), pathStackInitBest, pathStackInit);
+		m.printPath(m.getEnd(), pathStackInitBest, g);
+		system("pause");
+		clearVisited(g);
+		clearStack(pathStackInitBest);
+		clearStack(pathStackInit);
+		findPathDFSRecursiveCall(g, m.getEnd(), pathStackInit);
+		m.printPath(m.getEnd(), pathStackInit, g);
+		system("pause");
+		clearVisited(g);
+		clearStack(pathStackInitBest);
+		clearStack(pathStackInit);
+		findPathDFSStack(g, m.getStart(), m.getEnd(), pathStackInit);
+		m.printPath(m.getEnd(), pathStackInit, g);
+		system("pause");
+
 	}
 	catch (rangeError e)
 	{
