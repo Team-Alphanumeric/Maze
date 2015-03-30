@@ -124,11 +124,11 @@ void findPathDFSRecursive(Graph &g, Graph::vertex_descriptor node, Graph::vertex
 
 }
 //fuction to call DFS for any path with less aruguments
-void findPathDFSRecursiveCall(Graph &g, Graph::vertex_descriptor endNode, stack<Graph::vertex_descriptor> &pathInit)
+void findPathDFSRecursiveCall(Graph &g, Graph::vertex_descriptor startNode, Graph::vertex_descriptor endNode, stack<Graph::vertex_descriptor> &pathInit)
 {
 	pair<Graph::vertex_iterator, Graph::vertex_iterator> vItrRange = vertices(g);	
 	clearVisited(g);
-	findPathDFSRecursive(g, *vItrRange.first, endNode, pathInit);
+	findPathDFSRecursive(g, startNode, endNode, pathInit);
 }
 // find any path in the graph using DFS with a Stack
 void findPathDFSStack(Graph &g, Graph::vertex_descriptor startNode, Graph::vertex_descriptor endNode, stack<Graph::vertex_descriptor> &path)
@@ -369,7 +369,7 @@ int main()
 		clearVisited(g);
 		clearStack(pathStackInitBest);
 		clearStack(pathStackInit);
-		findPathDFSRecursiveCall(g, m.getEnd(), pathStackInit);
+		findPathDFSRecursiveCall(g, m.getStart(), m.getEnd(), pathStackInit);
 		m.printPath(m.getEnd(), pathStackInit, g);
 		system("pause");
 		clearVisited(g);
