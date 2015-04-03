@@ -13,7 +13,7 @@
 #include "d_except.h"
 #include "d_matrix.h"
 
-#define LargeValue 99999999
+//#define LargeValue 99999999
 using namespace boost;
 using namespace std;
 
