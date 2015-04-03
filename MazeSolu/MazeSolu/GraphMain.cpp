@@ -10,6 +10,7 @@
 #include <queue>
 #include <list>
 #include <string>
+#include "heapV.h"
 
 
 
@@ -93,7 +94,7 @@ bool relax(Graph::vertex_descriptor currnode, Graph::vertex_descriptor neighnode
 		// if going through the current node is less costly than the neighbor's current path . . . 	
 		if(cwt+ewt < nwt) 
 		{
-			g[neighnode].weight = newWgt; // set the neighboring node's weight to using current node
+			g[neighnode].weight = cwt+ewt; // set the neighboring node's weight to using current node
 			g[neighnode].pred = currnode; // set the nieghboring node's predecessor to use current node
 			return true; // return that the neighboring value was relaxed
 		}
@@ -103,7 +104,7 @@ bool relax(Graph::vertex_descriptor currnode, Graph::vertex_descriptor neighnode
 	
 }
 
-void insertNodes(heapV &Q, Graph &g)
+void insertNodes(heapV<Graph::vertex_descriptor, Graph> &Q, Graph &g)
 {
 	pair<Graph::vertex_iterator, Graph::vertex_iterator> vItr = vertices(g);
 	for(Graph::vertex_iterator v = vItr.first; v != vItr.second; ++v)
@@ -111,6 +112,46 @@ void insertNodes(heapV &Q, Graph &g)
 	return;
 }
 
+bool bellmanFord(Graph &g, Graph::vertex_descriptor s)
+{
+	//univist all nodes
+	clearVisited(g);
+
+	//set all weights of the nodes in the graph as infinite
+	setNodeWeights(g, LargeValue);
+
+	//set the first nod's weight to 0
+	g[s].weight = 0;
+
+	//for all Nodes in the graph
+	pair<Graph::vertex_iterator, Graph::vertex_iterator> vItrRange = vertices(g);
+	for (Graph::vertex_iterator i = vItrRange.first; i < vItrRange.second - 1; i++)
+	{
+		//for all edges, relax every node with its edge
+		pair<Graph::edge_iterator, Graph::edge_iterator> eItrRange = edges(g);
+		for (Graph::edge_iterator eItr = eItrRange.first; eItr != eItrRange.second; ++eItr)
+		{
+			//find the current node and the target node for each edge,
+			//so that it can be relaxed
+			Graph::vertex_descriptor neigh = target(*eItr, g);
+			Graph::vertex_descriptor curr = source(*eItr, g);
+			//relax node given by the edge
+			bool changed = relax(curr, neigh, g); // not sure of the importance of the return value
+		}
+	}
+	//for each edge 
+	pair<Graph::edge_iterator, Graph::edge_iterator> eItrRange = edges(g);
+	for (Graph::edge_iterator eItr = eItrRange.first; eItr != eItrRange.second; ++eItr)
+	{
+		Graph::vertex_descriptor neigh = target(*eItr, g);
+		Graph::vertex_descriptor curr = source(*eItr, g);
+		if (g[neigh].weight > g[curr].weight + g[*eItr].weight)
+		{
+			return false;
+		}
+	}
+	return true;
+}
 
 bool dijkstra(Graph &g, Graph::vertex_descriptor s)
 {
@@ -159,7 +200,7 @@ bool dijkstra(Graph &g, Graph::vertex_descriptor s)
 				bool changed = relax(cv,nv,g);
 				
 				// reset the priority queue after a successful relaxation
-				if(changed) { nodes.minHeapDecreaseKey(getIndex(nv),g);	}
+				if(changed) { nodes.minHeapDecreaseKey(nodes.getIndex(nv),g);	}
 				
 
 				/* 	if neighbor node is not in the queue already, push it onto the queue:
@@ -222,33 +263,7 @@ int main()
 			queue<Graph::vertex_descriptor> pathQueueInit;
 			clearVisited(g);
 
-			findShortestPathBFS(g, m.getStart(), m.getEnd(), pathQueueInit, pathStackInitBest);		
-			m.printPath(m.getEnd(), pathStackInitBest, g);
-			system("pause");
-
-			clearVisited(g);
-			clearStack(pathStackInitBest);
-			clearStack(pathStackInit);
-
-			findShortestPathDFS(g, m.getStart(), m.getEnd(), pathStackInitBest, pathStackInit);
-			m.printPath(m.getEnd(), pathStackInitBest, g);
-			system("pause");
-
-			clearVisited(g);
-			clearStack(pathStackInitBest);
-			clearStack(pathStackInit);
-
-			findPathDFSRecursiveCall(g, m.getStart(), m.getEnd(), pathStackInit);
-			m.printPath(m.getEnd(), pathStackInit, g);
-			system("pause");
-
-			clearVisited(g);
-			clearStack(pathStackInitBest);
-			clearStack(pathStackInit);
-
-			findPathDFSStack(g, m.getStart(), m.getEnd(), pathStackInit);
-			m.printPath(m.getEnd(), pathStackInit, g);
-			system("pause");
+			
 		}
 
 	}
