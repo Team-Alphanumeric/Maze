@@ -114,7 +114,7 @@ void insertNodes(heapV &Q, Graph &g)
 
 bool dijkstra(Graph &g, Graph::vertex_descriptor s)
 {
-	// for the current node and neighbor node
+	// for the current vertex and neighbor vertex
 	Graph::vertex_descriptor cv, nv;
 
 	// declare the heap that we will use as a priority queue
@@ -181,7 +181,8 @@ bool dijkstra(Graph &g, Graph::vertex_descriptor s)
 	for (Graph::vertex_iterator vItr= vItrRange.first; vItr != vItrRange.second; ++vItr)
 	{ checked = checked && g[*vItr].visited; }
 	
-	
+	// return whether algorithm successfully covers the entire graph
+	return checked;
 }
 
 int main()
