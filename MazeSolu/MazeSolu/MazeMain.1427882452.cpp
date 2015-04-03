@@ -330,8 +330,6 @@ void findShortestPathBFS(Graph &g, Graph::vertex_descriptor startNode, Graph::ve
 	}
 }
 
-
-
 int main()
 {	
 	try
@@ -341,12 +339,11 @@ int main()
 
 		// Read the maze from the file.
 		string file = "maze";
-		string path = "E:/Users/Thurston Brevett/Documents/Northeastern/Courses/Spring 2015/Algorithms/Maze/maze-files/";
 		for(int i=1; i<=12; i++)
 		{
 				
 			
-			string fileName = path + file + (char(i+48)) + ".txt";
+			string fileName = file + (char(i+48)) + ".txt";
 			
 			cout << "Opening file " << fileName << endl;
 			fin.open(fileName.c_str());
@@ -361,39 +358,30 @@ int main()
 			
 			m.print(m.numRows() - 1, m.numCols() - 1, 0, 0);
 			system("pause");
-			
 			Graph g;
 			m.mapMazeToGraph(g);	
-			
 			stack<Graph::vertex_descriptor> pathStackInit;
 			stack<Graph::vertex_descriptor> pathStackInitBest;
 			queue<Graph::vertex_descriptor> pathQueueInit;
 			clearVisited(g);
-
 			findShortestPathBFS(g, m.getStart(), m.getEnd(), pathQueueInit, pathStackInitBest);		
 			m.printPath(m.getEnd(), pathStackInitBest, g);
 			system("pause");
-
 			clearVisited(g);
 			clearStack(pathStackInitBest);
 			clearStack(pathStackInit);
-
 			findShortestPathDFS(g, m.getStart(), m.getEnd(), pathStackInitBest, pathStackInit);
 			m.printPath(m.getEnd(), pathStackInitBest, g);
 			system("pause");
-
 			clearVisited(g);
 			clearStack(pathStackInitBest);
 			clearStack(pathStackInit);
-
 			findPathDFSRecursiveCall(g, m.getStart(), m.getEnd(), pathStackInit);
 			m.printPath(m.getEnd(), pathStackInit, g);
 			system("pause");
-
 			clearVisited(g);
 			clearStack(pathStackInitBest);
 			clearStack(pathStackInit);
-
 			findPathDFSStack(g, m.getStart(), m.getEnd(), pathStackInit);
 			m.printPath(m.getEnd(), pathStackInit, g);
 			system("pause");
