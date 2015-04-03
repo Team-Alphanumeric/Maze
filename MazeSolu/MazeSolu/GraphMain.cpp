@@ -95,7 +95,6 @@ bool relax(Graph::vertex_descriptor currnode, Graph::vertex_descriptor neighnode
 		{
 			g[neighnode].weight = newWgt; // set the neighboring node's weight to using current node
 			g[neighnode].pred = currnode; // set the nieghboring node's predecessor to use current node
-			// reset the priority queue after a successful relaxa
 			return true; // return that the neighboring value was relaxed
 		}
 	}
@@ -157,7 +156,10 @@ bool dijkstra(Graph &g, Graph::vertex_descriptor s)
 			if(!g[nv].visited) // process only unvisited 
 			{
 				// relax the neighboring node
-				relax(cv,nv,g);
+				bool changed = relax(cv,nv,g);
+				
+				// reset the priority queue after a successful relaxation
+				if(changed) { nodes.minHeapDecreaseKey(getIndex(nv),g);	}
 				
 
 				/* 	if neighbor node is not in the queue already, push it onto the queue:
@@ -172,7 +174,14 @@ bool dijkstra(Graph &g, Graph::vertex_descriptor s)
 		}
 	}
 	
-	// when all nodes reachable from the start have been popped, 
+	// when all nodes reachable from the start have been popped, check that 
+	// all nodes in the graph have been visited 
+	bool checked = true;
+	pair<Graph::vertex_iterator, Graph::vertex_iterator> vItrRange = vertices(g);
+	for (Graph::vertex_iterator vItr= vItrRange.first; vItr != vItrRange.second; ++vItr)
+	{ checked = checked && g[*vItr].visited; }
+	
+	
 }
 
 int main()
