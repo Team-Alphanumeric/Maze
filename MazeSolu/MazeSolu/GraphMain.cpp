@@ -72,6 +72,8 @@ bool relax(Graph::vertex_descriptor currnode, Graph::vertex_descriptor neighnode
 		int cwt = g[currnode].weight; // current node's weight
 		int nwt = g[neighnode].weight; // neighboring node's weight
 		int ewt = g[edgChk.first].weight; // edge weight
+		
+		if(cwt == LargeValue) {return false;} // relaxation not possible if the current node is at maximum weight
 	
 		// if going through the current node is less costly than the neighbor's current path . . . 	
 		if(cwt+ewt < nwt) 
@@ -84,6 +86,36 @@ bool relax(Graph::vertex_descriptor currnode, Graph::vertex_descriptor neighnode
 	
 	return false; //  return that the neighboring value is unchanged
 	
+}
+
+bool bellmanFord(Graph &g, Graph::vertex_descriptor s)
+{
+	//set all weights of the nodes in the graph as infinite
+	setNodeWeights(g, LargeValue);
+
+	//set the first node's weight to 0
+	g[s].weight = 0;
+
+	// for as many nodes exist in the graph
+	for (int i = 0; i <= num_vertices(g); ++i)
+	{
+		// for all edges, relax every node connected to an edge
+		pair<Graph::edge_iterator, Graph::edge_iterator> eItrRange = edges(g);
+		for (Graph::edge_iterator eItr = eItrRange.first; eItr != eItrRange.second; ++eItr)
+		{
+			//find the current node and the target node for each edge,
+			//so that it can be relaxed
+			Graph::vertex_descriptor neigh = target(*eItr, g);
+			Graph::vertex_descriptor curr = source(*eItr, g);
+			//relax node given by the edge
+			bool changed = relax(curr, neigh, g);
+			// if this is iteration i = |V|-1, there should be no more relaxation: otherwise, a negative cycle exists
+			if(i==num_vertieces(g) && changed) 
+				
+			
+		}
+	}
+	return true;
 }
 
 bool dijkstra(Graph &g, Graph::vertex_descriptor s)
@@ -210,6 +242,7 @@ int main()
 			if(!worked) { std::cout << "Warning: Dijkstra's algorithm did not complete entire graph" << endl; }
 			if(!g[m.getEnd()].visited) { std::cout << "Dijkstra's algorithm unable to compute path to the end node" << endl; }
 			else { m.printPath(m.getEnd(),m.getStart(),g);	}
+
 		}
 
 	}
