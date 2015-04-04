@@ -18,16 +18,16 @@ class heapV
 {
 public:
    heapV();
-   void initializeMaxHeap(vector<T> list2);
-   void initializeMinHeap(vector<T> list2);
+   void initializeMaxHeap(vector<T> list2, U &g);
+   void initializeMinHeap(vector<T> list2, U &g);
    
    void maxHeapify(int i, int heapSize, U &g);
-   void buildMaxHeap(int heapSize);
+   void buildMaxHeap(int heapSize, U &g);
    
    void minHeapify(int i, int heapSize, U &g);
-   void buildMinHeap(int heapSize);
+   void buildMinHeap(int heapSize, U &g);
    
-   void heapsort(int heapSize);
+   void heapsort(int heapSize, U &g);
    
    int parent(int i) {return (i+1)/2-1;}  // Given a node in a heap, return the index of the parent
    // Map vertex indices from 0-based to 1-based and
@@ -37,6 +37,7 @@ public:
    
    T &getItem(int i) {return list[i];}      // Return a reference to the ith item in the heap
    int getIndex(T &key);
+   bool contains(T &key); // Returns whether the heap contains the object
    int size() {return list.size();}
    
    T getMaxHeapMaximum();
@@ -66,23 +67,33 @@ int heapV<T,U>::getIndex(T &key)
 }
 
 template <typename T, typename U>
+bool heapV<T,U>::contains(T &key)
+// Returns whether any object in the list matches the key
+{
+   for (int i = 0; i < size(); i++)
+      if (getItem(i) == key)
+         return true;
+   return false;      
+}
+
+template <typename T, typename U>
 heapV<T,U>::heapV()
 // Construct an empty heap.
 {
 }
 
 template <typename T, typename U>
-void heapV<T,U>::initializeMaxHeap(vector<T> list2)
+void heapV<T,U>::initializeMaxHeap(vector<T> list2, U &g)
 // Initialize a max heap from values in list2.
 {
    for (int i = 0; i < list2.size(); i++)
       list.push_back(list2[i]);
    
-   buildMaxHeap(size());
+   buildMaxHeap(size(),g);
 }
 
 template <typename T, typename U>
-void heapV<T,U>::initializeMinHeap(vector<T> list2)
+void heapV<T,U>::initializeMinHeap(vector<T> list2, U &g)
 // Initialize a min heap from values in list2.
 {
    for (int i = 0; i < list2.size(); i++)
@@ -116,7 +127,7 @@ void heapV<T,U>::maxHeapify(int i, int heapSize, U &g)
    if (largest != i)
    {
       swap(list[i],list[largest]);
-      maxHeapify(largest, heapSize,g);
+      maxHeapify(largest, heapSize, g);
    }
 }
 
@@ -150,25 +161,25 @@ void heapV<T,U>::minHeapify(int i, int heapSize, U &g)
 }
 
 template <typename T, typename U>
-void heapV<T,U>::buildMaxHeap(int heapSize)
+void heapV<T,U>::buildMaxHeap(int heapSize, U &g)
 // Transforms an unordered list into a heap bottom-up.  The second half of a list
 // represents leaves of the tree, so each element represents a one-element heap.
 // This function builds a heap by running minHeapify on the first non-leaf, and
 // works up to the first element.  Max indices from starting at 0 to 1.
 {
    for (int i = (size()+1)/2; i >= 0; i--)
-      maxHeapify(i, heapSize);
+      maxHeapify(i, heapSize, g);
 }
 
 template <typename T, typename U>
-void heapV<T,U>::buildMinHeap(int heapSize)
+void heapV<T,U>::buildMinHeap(int heapSize, U &g)
 // Transforms an unordered list into a heap bottom-up.  The second half of a list
 // represents leaves of the tree, so each element represents a one-element heap.
 // This function builds a heap by running minHeapify on the first non-leaf, and
 // works up to the first element.  Max indices from starting at 0 to 1.
 {
    for (int i = (size()+1)/2; i >= 0; i--)
-      minHeapify(i, heapSize);
+      minHeapify(i, heapSize, g);
 }
 
 template <typename T, typename U>
@@ -256,14 +267,14 @@ void heapV<T,U>::minHeapInsert(T key, U &g)
 
 
 template <typename T, typename U>
-void heapV<T,U>::heapsort(int heapSize)
+   void heapV<T,U>::heapsort(int heapSize, U &g)
 // Given an unordered list, first builds a max-heap.  The maximum
 // element is now in the first position, and it is swapped into the
 // last position.  The heap size is reduced by one, which might cause
 // element 1 to violate the max-heap property.  The call to maxHeapify
 // restores the max-heap property, and the functions repeats.
 {
-   buildMaxHeap(heapSize);
+   buildMaxHeap(heapSize, g);
    
    for (int i = size()-1; i >= 0; i--)
    {
@@ -274,7 +285,7 @@ void heapV<T,U>::heapsort(int heapSize)
       heapSize--;
       
       // cout << "maxHeapify" << endl;
-      maxHeapify(0,heapSize);
+      maxHeapify(0,heapSize,g);
    }
 }
 
