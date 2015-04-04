@@ -76,18 +76,28 @@ bool relax(Graph::vertex_descriptor currnode, Graph::vertex_descriptor neighnode
 		
 		if(cwt == LargeValue) {return false;} // relaxation not possible if the current node is at maximum weight
 	
-		// if going through the current node is less costly than the neighbor's current path . . . 	
-		if(cwt+ewt < nwt) 
+		// if going through the current node and edge is less costly than the neighbor's current path . . . 	
+		if(cwt + ewt < nwt) 
 		{
-			g[neighnode].weight = cwt+ewt; // set the neighboring node's weight to using current node
+			g[neighnode].weight = cwt+ewt; // set the neighboring node's weight to using current node/edge
 			g[neighnode].pred = currnode; // set the nieghboring node's predecessor to use current node
 			return true; // return that the neighboring value was relaxed
 		}
 	}
-	
 	return false; //  return that the neighboring value is unchanged
-	
 }
+
+// attempts to relax an edge an returns whether the neighboring node's weight changed
+// if sucessful, sets the predecessor of the neighbor to the current node and reset's the
+// min priority queue
+bool relax(Graph::vertex_descriptor currnode, Graph::vertex_descriptor neighnode, 
+Graph &g, heapV<Graph::vertex_descriptor, Graph> &q)
+{
+	bool changed = relax(currnode,neighnode,g); // attempt relaxation of nodes
+	if(changed) { q.minHeapDecreaseKey(q.getIndex(neighnode),g); } // if relaxation is successful, reset priority queue
+	return changed; // return whether relaxation occured
+}
+
 
 bool bellmanFord(Graph &g, Graph::vertex_descriptor s)
 {
@@ -96,16 +106,14 @@ bool bellmanFord(Graph &g, Graph::vertex_descriptor s)
 
 	//set the first node's weight to 0
 	g[s].weight = 0;
+	
+	// get a reference to the start/end of the list of edges in the graph
+	pair<Graph::edge_iterator, Graph::edge_iterator> eItrRange = edges(g);
 
 	// for as many nodes exist in the graph + 1 cycle (for checking)
 	for (int i = 0; i <= num_vertices(g); ++i)
 	{
-		// create temporary varable for algorithm check iteration
-		bool affected = true;
-		
-		// for all edges, relax every node connected to an edge
-		pair<Graph::edge_iterator, Graph::edge_iterator> eItrRange = edges(g);
-		
+		// for all edges, relax every node connected to an edge		
 		for (Graph::edge_iterator eItr = eItrRange.first; eItr != eItrRange.second; ++eItr)
 		{
 			//find the current node and the target node for each edge,
@@ -116,18 +124,19 @@ bool bellmanFord(Graph &g, Graph::vertex_descriptor s)
 			// relax nodes given by the edge
 			bool changed = relax(curr, neigh, g);
 			
-			// after iteration i = |V| - 1, check for quiescence
+			// after iteration i = |V| - 1, algorithm should converge:
+			// so on iteration i = |V|, check for quiescence
 			if(i == num_vertices(g))
 			{
-				// by now, every vertex should be reachable
-				if(g[curr].weight == LargeValue) // this will check every vertex twice, but easier than another for loop :)
-					return false;
-				// by now, there should be no more relaxation: otherwise, a negative cycle exists
-				if(changed)
-					return false;
+				// this will check every vertex twice, but easier than another for loop :)
+				if(g[curr].weight == LargeValue) // by now, every vertex should be reachable
+					return false;				
+				if(changed) // by now, there should be no more relaxation for any edge
+					return false; // otherwise, a negative cycle exists
 			}
 		}
 	}
+	// If algorithm and final check completes, the algorithm has succeeded
 	return true;
 }
 
@@ -182,12 +191,8 @@ bool dijkstra(Graph &g, Graph::vertex_descriptor s)
 				if(!nodes.contains(nv)) 
 				{	nodes.minHeapInsert(nv,g);	}
 
-				// relax the neighboring node
-				bool changed = relax(cv,nv,g);
-				
-				// reset the priority queue after a successful relaxation
-				if(changed) { nodes.minHeapDecreaseKey(nodes.getIndex(nv),g);	}
-				
+				// relax the neighboring node and reset the priority queue
+				relax(cv,nv,g,nodes);	
 			}		
 		}
 	}
@@ -197,7 +202,7 @@ bool dijkstra(Graph &g, Graph::vertex_descriptor s)
 	bool checked = true;
 	pair<Graph::vertex_iterator, Graph::vertex_iterator> vItrRange = vertices(g);
 	for (Graph::vertex_iterator vItr= vItrRange.first; vItr != vItrRange.second; ++vItr)
-	{ checked = checked && g[*vItr].visited; }
+	{ checked &= g[*vItr].visited; }
 	
 	// return whether algorithm successfully covers the entire graph
 	return checked;
@@ -265,7 +270,6 @@ int main()
 			
 
 		}
-
 	}
 	catch (rangeError e)
 	{
@@ -276,6 +280,7 @@ int main()
 		cout << "Unspecified error\n" << endl;
 	}
 	system("pause");
+	return 0;
 
 }
 
