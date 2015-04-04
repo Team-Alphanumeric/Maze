@@ -62,7 +62,8 @@ void insertNodes(heapV<Graph::vertex_descriptor,Graph> &Q, Graph &g)
 }
 
 
-// attempts to relax an edge an returns wether the neighboring node's weight changed
+// attempts to relax an edge an returns whether the neighboring node's weight changed
+// if sucessful, sets the predecessor of the neighbor to the current node
 bool relax(Graph::vertex_descriptor currnode, Graph::vertex_descriptor neighnode, Graph &g)
 {
 	pair<Graph::edge_descriptor, bool> edgChk = edge(neighnode,currnode,g);
@@ -96,23 +97,35 @@ bool bellmanFord(Graph &g, Graph::vertex_descriptor s)
 	//set the first node's weight to 0
 	g[s].weight = 0;
 
-	// for as many nodes exist in the graph
+	// for as many nodes exist in the graph + 1 cycle (for checking)
 	for (int i = 0; i <= num_vertices(g); ++i)
 	{
+		// create temporary varable for algorithm check iteration
+		bool affected = true;
+		
 		// for all edges, relax every node connected to an edge
 		pair<Graph::edge_iterator, Graph::edge_iterator> eItrRange = edges(g);
+		
 		for (Graph::edge_iterator eItr = eItrRange.first; eItr != eItrRange.second; ++eItr)
 		{
 			//find the current node and the target node for each edge,
 			//so that it can be relaxed
 			Graph::vertex_descriptor neigh = target(*eItr, g);
 			Graph::vertex_descriptor curr = source(*eItr, g);
-			//relax node given by the edge
-			bool changed = relax(curr, neigh, g);
-			// if this is iteration i = |V|-1, there should be no more relaxation: otherwise, a negative cycle exists
-			if(i==num_vertieces(g) && changed) 
-				
 			
+			// relax nodes given by the edge
+			bool changed = relax(curr, neigh, g);
+			
+			// after iteration i = |V| - 1, check for quiescence
+			if(i == num_vertices(g))
+			{
+				// by now, every vertex should be reachable
+				if(g[curr].weight == LargeValue) // this will check every vertex twice, but easier than another for loop :)
+					return false;
+				// by now, there should be no more relaxation: otherwise, a negative cycle exists
+				if(changed)
+					return false;
+			}
 		}
 	}
 	return true;
@@ -214,8 +227,8 @@ int main()
 		// Read the maze from the file.
 		string file = "maze";
 		string path = "E:/Users/Thurston Brevett/Documents/Northeastern/Courses/Spring 2015/Algorithms/Maze/maze-files/";
-		int mazeInd[] = {1,2,3,4,5,6,13,14,15,16,17};
-		for(int i=0; i<11; i++)
+		int mazeInd[] = {15,16,17};
+		for(int i=0; i<3; i++)
 		{
 				
 			
@@ -235,13 +248,21 @@ int main()
 			m.print(m.numRows() - 1, m.numCols() - 1, 0, 0,vector<pair<int,int> >());
 			system("pause");
 			
-			Graph g;
-			m.mapMazeToGraph(g);	
+			Graph g,gj;
+			m.mapMazeToGraph(g);
+			m.mapMazeToGraph(gj);	
 
-			bool worked = dijkstra(g,m.getStart());
-			if(!worked) { std::cout << "Warning: Dijkstra's algorithm did not complete entire graph" << endl; }
+			bool dworked = dijkstra(g,m.getStart());
+			if(!dworked) { std::cout << "Warning: Dijkstra's algorithm did not complete entire graph" << endl; }
 			if(!g[m.getEnd()].visited) { std::cout << "Dijkstra's algorithm unable to compute path to the end node" << endl; }
 			else { m.printPath(m.getEnd(),m.getStart(),g);	}
+			
+			bool bfworked = bellmanFord(gj,m.getStart());
+			if(!bfworked) { std::cout << "Warning: Bellman-Ford algorithm unable to converge on the entire graph" << endl; }
+			if(gj[m.getEnd()].weight == LargeValue) { std::cout << "Bellman-Ford algorithm unable to compute path to the end node" << endl; }
+			else { m.printPath(m.getEnd(),m.getStart(),gj);	}
+			
+			
 
 		}
 
