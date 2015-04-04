@@ -1,0 +1,11 @@
+*.zip
+*.txt
+*.exe
+MazeSolu/MazeSolu/GraphMain.1428159448.cpp
+MazeSolu/MazeSolu/heapV.1428160417.h
+*.win
+MazeSolu/MazeSolu/maze.1428160515.h
+MazeSolu/MazeSolu/Graph.dev
+*.layout
+*.o
+MazeSolu/MazeSolu/maze.cpp
