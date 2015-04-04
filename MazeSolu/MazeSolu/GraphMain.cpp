@@ -41,27 +41,6 @@ void setNodeWeights(Graph &g, int w)
 	}
 }
 
-// set all the vertices as unmarked
-void clearMarked(Graph &g)
-{
-	//loops through all the vertices
-	pair<Graph::vertex_iterator, Graph::vertex_iterator> vItrRange = vertices(g);
-	for (Graph::vertex_iterator v = vItrRange.first; v != vItrRange.second; ++v)
-	{
-		//sets each vertice as not marked
-		g[*v].marked = false;
-	}
-}
-
-void insertNodes(heapV<Graph::vertex_descriptor,Graph> &Q, Graph &g)
-{
-	pair<Graph::vertex_iterator, Graph::vertex_iterator> vItr = vertices(g);
-	for(Graph::vertex_iterator v = vItr.first; v != vItr.second; ++v)
-	{	Q.minHeapInsert((*v), g); }
-	return;
-}
-
-
 // attempts to relax an edge an returns whether the neighboring node's weight changed
 // if sucessful, sets the predecessor of the neighbor to the current node
 bool relax(Graph::vertex_descriptor currnode, Graph::vertex_descriptor neighnode, Graph &g)
