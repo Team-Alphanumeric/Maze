@@ -10,6 +10,7 @@
 #include <queue>
 #include <list>
 #include <string>
+#include "heapV.h"
 
 
 
@@ -39,35 +40,8 @@ void setNodeWeights(Graph &g, int w)
 		g[*v].weight = w;
 	}
 }
-template <typename T>
-void setStacksEqual(stack <T> firstStack, stack <T> &secondStack)
-{
-	while (!secondStack.empty())
-	{
-		secondStack.pop();
-	}
-	stack <T> intermidate;
-	while (!firstStack.empty())
-	{
-		intermidate.push(firstStack.top());
-		firstStack.pop();
-	}
-	while (!intermidate.empty())
-	{
-		secondStack.push(intermidate.top());
-		intermidate.pop(); 
-	}
-}
-//clear the stack of all data
-template <typename T>
-void clearStack(stack<T> firstStack)
-{
-	while (!firstStack.empty())
-	{
-		firstStack.pop();
-	}
-}
-// set all the vericies as unmarked
+
+// set all the vertices as unmarked
 void clearMarked(Graph &g)
 {
 	//loops through all the vertices
@@ -78,6 +52,15 @@ void clearMarked(Graph &g)
 		g[*v].marked = false;
 	}
 }
+
+void insertNodes(heapV<Graph::vertex_descriptor,Graph> &Q, Graph &g)
+{
+	pair<Graph::vertex_iterator, Graph::vertex_iterator> vItr = vertices(g);
+	for(Graph::vertex_iterator v = vItr.first; v != vItr.second; ++v)
+	{	Q.minHeapInsert((*v), g); }
+	return;
+}
+
 
 // attempts to relax an edge an returns wether the neighboring node's weight changed
 bool relax(Graph::vertex_descriptor currnode, Graph::vertex_descriptor neighnode, Graph &g)
@@ -93,7 +76,7 @@ bool relax(Graph::vertex_descriptor currnode, Graph::vertex_descriptor neighnode
 		// if going through the current node is less costly than the neighbor's current path . . . 	
 		if(cwt+ewt < nwt) 
 		{
-			g[neighnode].weight = newWgt; // set the neighboring node's weight to using current node
+			g[neighnode].weight = cwt+ewt; // set the neighboring node's weight to using current node
 			g[neighnode].pred = currnode; // set the nieghboring node's predecessor to use current node
 			return true; // return that the neighboring value was relaxed
 		}
@@ -102,15 +85,6 @@ bool relax(Graph::vertex_descriptor currnode, Graph::vertex_descriptor neighnode
 	return false; //  return that the neighboring value is unchanged
 	
 }
-
-void insertNodes(heapV &Q, Graph &g)
-{
-	pair<Graph::vertex_iterator, Graph::vertex_iterator> vItr = vertices(g);
-	for(Graph::vertex_iterator v = vItr.first; v != vItr.second; ++v)
-	{	Q.minHeapInsert((*v), g); }
-	return;
-}
-
 
 bool dijkstra(Graph &g, Graph::vertex_descriptor s)
 {
@@ -153,23 +127,22 @@ bool dijkstra(Graph &g, Graph::vertex_descriptor s)
 			// get a neighboring node
 			nv = *nb;
 			
-			if(!g[nv].visited) // process only unvisited 
+			if(!g[nv].visited) // process only unvisited (directed graph / greedy algorithm approach)
 			{
-				// relax the neighboring node
-				bool changed = relax(cv,nv,g);
-				
-				// reset the priority queue after a successful relaxation
-				if(changed) { nodes.minHeapDecreaseKey(getIndex(nv),g);	}
-				
-
 				/* 	if neighbor node is not in the queue already, push it onto the queue:
 					this implementation ensures that we do not process nodes
 					that are not reachable, which would occur if we were to push all 
 					nodes onto the priority queue */
-				bool contains = false;
-				for(int i=0; i<nodes.size(); ++i)
-				{	contains = contains || 	(nv == nodes.getItem(i));	}
-				if(!contains) {	nodes.minHeapInsert(nv,g);	}
+			
+				if(!nodes.contains(nv)) 
+				{	nodes.minHeapInsert(nv,g);	}
+
+				// relax the neighboring node
+				bool changed = relax(cv,nv,g);
+				
+				// reset the priority queue after a successful relaxation
+				if(changed) { nodes.minHeapDecreaseKey(nodes.getIndex(nv),g);	}
+				
 			}		
 		}
 	}
@@ -185,6 +158,20 @@ bool dijkstra(Graph &g, Graph::vertex_descriptor s)
 	return checked;
 }
 
+string num2string(int i)
+{
+	string txt="", temp="";
+	while(i != 0)
+	{
+		txt += char((i%10)+48);
+		i = i/10;
+	}
+	temp.resize(txt.size());
+	for(i=0;i<txt.size();++i)
+	{ temp[i] = txt[txt.size()-1-i]; }
+	return temp;
+}
+
 int main()
 {	
 	try
@@ -195,11 +182,12 @@ int main()
 		// Read the maze from the file.
 		string file = "maze";
 		string path = "E:/Users/Thurston Brevett/Documents/Northeastern/Courses/Spring 2015/Algorithms/Maze/maze-files/";
-		for(int i=1; i<=12; i++)
+		int mazeInd[] = {1,2,3,4,5,6,13,14,15,16,17};
+		for(int i=0; i<11; i++)
 		{
 				
 			
-			string fileName = path + file + (char(i+48)) + ".txt";
+			string fileName = path + file + num2string(mazeInd[i]) + ".txt";
 			
 			cout << "Opening file " << fileName << endl;
 			fin.open(fileName.c_str());
@@ -212,44 +200,16 @@ int main()
 			maze m(fin);
 			fin.close();
 			
-			m.print(m.numRows() - 1, m.numCols() - 1, 0, 0);
+			m.print(m.numRows() - 1, m.numCols() - 1, 0, 0,vector<pair<int,int> >());
 			system("pause");
 			
 			Graph g;
 			m.mapMazeToGraph(g);	
-			
-			stack<Graph::vertex_descriptor> pathStackInit;
-			stack<Graph::vertex_descriptor> pathStackInitBest;
-			queue<Graph::vertex_descriptor> pathQueueInit;
-			clearVisited(g);
 
-			findShortestPathBFS(g, m.getStart(), m.getEnd(), pathQueueInit, pathStackInitBest);		
-			m.printPath(m.getEnd(), pathStackInitBest, g);
-			system("pause");
-
-			clearVisited(g);
-			clearStack(pathStackInitBest);
-			clearStack(pathStackInit);
-
-			findShortestPathDFS(g, m.getStart(), m.getEnd(), pathStackInitBest, pathStackInit);
-			m.printPath(m.getEnd(), pathStackInitBest, g);
-			system("pause");
-
-			clearVisited(g);
-			clearStack(pathStackInitBest);
-			clearStack(pathStackInit);
-
-			findPathDFSRecursiveCall(g, m.getStart(), m.getEnd(), pathStackInit);
-			m.printPath(m.getEnd(), pathStackInit, g);
-			system("pause");
-
-			clearVisited(g);
-			clearStack(pathStackInitBest);
-			clearStack(pathStackInit);
-
-			findPathDFSStack(g, m.getStart(), m.getEnd(), pathStackInit);
-			m.printPath(m.getEnd(), pathStackInit, g);
-			system("pause");
+			bool worked = dijkstra(g,m.getStart());
+			if(!worked) { std::cout << "Warning: Dijkstra's algorithm did not complete entire graph" << endl; }
+			if(!g[m.getEnd()].visited) { std::cout << "Dijkstra's algorithm unable to compute path to the end node" << endl; }
+			else { m.printPath(m.getEnd(),m.getStart(),g);	}
 		}
 
 	}
