@@ -8,12 +8,12 @@
 #include <queue>
 #include <vector>
 #include <stack>
+#include <Windows.h>
 #include <boost/graph/adjacency_list.hpp>
 ;
 #include "d_except.h"
 #include "d_matrix.h"
 
-#define LargeValue 99999999
 using namespace boost;
 using namespace std;
 
@@ -45,14 +45,25 @@ class maze
 {
 public:
 	maze(ifstream &fin);
-	void print(int, int, int, int);
+	void print(int, int, int, int,vector<pair<int,int> >);
 	bool isLegal(int i, int j);
 	void mapMazeToGraph(Graph &g);
 	void printPath(Graph::vertex_descriptor end,
 		stack<Graph::vertex_descriptor> &s,
 		Graph g);
+	void printPath(Graph::vertex_descriptor end, Graph::vertex_descriptor start, Graph &g);
 	int numRows(){ return rows; };
 	int numCols(){ return cols; };
+	Graph::vertex_descriptor getEnd()
+	{		
+		return vMap[rows-1][cols-1];
+	}
+	Graph::vertex_descriptor getStart()
+	{
+		return vMap[0][0];
+	}
+
+	
 
 private:
 	int rows; // number of rows in the maze
@@ -60,6 +71,7 @@ private:
 
 	matrix<bool> value; //maze
 	matrix<Graph::vertex_descriptor> vMap; // vertices for the maze
+	
 	
 };
 
@@ -81,13 +93,29 @@ maze::maze(ifstream &fin)
 			value[i][j] = true;
 		else
 			value[i][j] = false;
+		if (x=='Z')
+			break;
 	}
 
 	vMap.resize(rows, cols);
 	return;
 }
 
-void maze::print(int goalI, int goalJ, int currI, int currJ)
+template <typename T>
+bool exist(T key,vector<T> vec)
+{
+	for(int i=0; i<vec.size(); ++i)
+	{
+		if(key == vec[i])
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+void maze::print(int goalI, int goalJ, int currI, int currJ, 
+vector<pair<int,int> > trailIJ)
 // Print out a maze, with the goal and current cells marked on the
 // board.
 {
@@ -105,11 +133,11 @@ void maze::print(int goalI, int goalJ, int currI, int currJ)
 		{
 			if (i == goalI && j == goalJ)
 				cout << "*";
-			else
-			if (i == currI && j == currJ)
+			else if (i == currI && j == currJ)
 				cout << "+";
-			else
-			if (value[i][j])
+			else if (exist< pair<int,int> >(pair<int,int>(i,j),trailIJ))
+				cout << char(254);
+			else if (value[i][j])
 				cout << " ";
 			else
 				cout << "X";
@@ -169,7 +197,10 @@ void maze::printPath(Graph::vertex_descriptor end,
 	stack<Graph::vertex_descriptor> &s, Graph g)
 {	
 	// temporary vertex descriptor
-	Graph::vertex_descriptor v;	
+	Graph::vertex_descriptor v;
+	
+	// create a vector of co-ordinate pairs for the trail
+	vector<pair<int,int> > trail;
 	
 	// while the stack is not empty
 	while (!s.empty())
@@ -177,10 +208,38 @@ void maze::printPath(Graph::vertex_descriptor end,
 		// get the top-of-stack vertex
 		v = s.top(); s.pop();		
 		// call print for this vertex
-		print(g[end].cell.first, g[end].cell.second, g[v].cell.first, g[v].cell.second);	
+		print(g[end].cell.first, g[end].cell.second, g[v].cell.first, g[v].cell.second, trail);
+		// add this node's cell position to the trail
+		trail.push_back(g[v].cell);
+		Sleep(150); // sleep for 250ms between moving to the next part //system("pause");
 	}
 	return;
 }
+
+// overloads to print a path given a start,end, and graph by building the stack
+void maze::printPath(Graph::vertex_descriptor end,
+ Graph::vertex_descriptor start, Graph &g)
+{
+	// temporary vertex variable
+	Graph::vertex_descriptor v = end;
+	
+	// create a stack for printing in order with the other printPath function
+	stack<Graph::vertex_descriptor> path;
+	
+	// add vertices to the stack starting at the end until we get to the start
+	path.push(end);
+	while(v != start)
+	{
+		v = g[v].pred; // move the current node to the previous' predecessor
+		path.push(v); // push the current node onto the stack
+	}
+	
+	// print the path
+	printPath(end,path,g);
+	
+	return;
+}
+
 
 // prints out all the properties of the the vertices and edges in the graph
 ostream &operator<<(ostream &ostr, const Graph &g)
@@ -192,7 +251,7 @@ ostream &operator<<(ostream &ostr, const Graph &g)
 		ostr << "Node descriptor " << *v << " properties: " << endl;
 		ostr << "Cell value at ( " << g[*v].cell.first << ", " << g[*v].cell.second << ") " << endl;
 		ostr << "Visited? " << ((g[*v].visited) ? "Yes" : "No") << endl;
-		ostr << "Weight? " << g[*v].weight << endl;
+		//ostr << "Weight? " << g[*v].weight << endl;
 		
 	}
 	//loop for all the edges
@@ -201,11 +260,13 @@ ostream &operator<<(ostream &ostr, const Graph &g)
 	{
 		Graph::vertex_descriptor u=target(*eItr, g);
 		Graph::vertex_descriptor v=source(*eItr, g);		
-		ostr << "Edge descriptor " << *eItr << " properties: " << endl;
-		ostr << "There is an edge between (" << g[v].cell.first << ", " << g[v].cell.second
-			<< ") and (" << g[u].cell.first << ", " << g[u].cell.second << "). " << endl;
-		ostr << "Visited? " << ((g[*eItr].visited) ? " Yes" : "No") << endl;
-		ostr << "Weight?" << g[*eItr].weight << endl;
+		//ostr << "Edge descriptor " << *eItr << " properties: " << endl;
+		//ostr << "There is an edge between (" << g[v].cell.first << ", " << g[v].cell.second
+		//	<< ") and (" << g[u].cell.first << ", " << g[u].cell.second << "). " << endl;
+		//ostr << "Visited? " << ((g[*eItr].visited) ? " Yes" : "No") << endl;
+		//ostr << "Weight?" << g[*eItr].weight << endl;
 	}
 	return ostr;
 }
+
+
