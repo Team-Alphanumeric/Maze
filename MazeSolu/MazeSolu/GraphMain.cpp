@@ -90,7 +90,7 @@ bool bellmanFord(Graph &g, Graph::vertex_descriptor s)
 	pair<Graph::edge_iterator, Graph::edge_iterator> eItrRange = edges(g);
 
 	// for as many nodes exist in the graph + 1 cycle (for checking)
-	for (int i = 0; i <= num_vertices(g); ++i)
+	for (int i = 0; i < num_vertices(g) + 1; ++i)
 	{
 		// for all edges, relax every node connected to an edge		
 		for (Graph::edge_iterator eItr = eItrRange.first; eItr != eItrRange.second; ++eItr)
@@ -115,6 +115,7 @@ bool bellmanFord(Graph &g, Graph::vertex_descriptor s)
 			}
 		}
 	}
+	
 	// If algorithm and final check completes, the algorithm has succeeded
 	return true;
 }
